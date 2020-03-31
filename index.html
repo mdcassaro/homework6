@@ -16,19 +16,21 @@
         <div class="row">
             <div class="col-md-3">
                 <form class="form-inline my-2 my-lg-0" style="padding: 15%;">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    <input class="form-control mr-sm-2" id = "subject" type="search"  placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" id="search" type="submit">Search</button>
                 </form>
             
-                <div class="list-group">
-                    <li class="list-group-item">Cities</li>
-                    <button type="button" class="list-group-item list-group-item-action">
-                      Cras justo odio
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action">Dapibus ac facilisis in</button>
-                    <button type="button" class="list-group-item list-group-item-action">Morbi leo risus</button>
-                    <button type="button" class="list-group-item list-group-item-action">Porta ac consectetur ac</button>
-                    <button type="button" class="list-group-item list-group-item-action">Vestibulum at eros</button>
+               
+                   
+                    
+                </div>
+                <h2 class=" col-4">Previous Searches:</h2>
+                <div class="col-5">
+                  <div class="card" >
+                      <ul class="prerviousCity"> 
+                        <button type="button" id="clearBtn" class="btn btn-secondary">Clear</button>
+                      </ul>
+                  </div>
                 </div>
             
 
@@ -37,26 +39,123 @@
             <div class="col-md-9">
                 <div class="card">
                     <div class="jumbotron" style="background-color: #fff;">
-                        <h1 class="display-4" id="city">City Placeholder</h1>
+                        <h1 class="display-4" id="city"></h1>
                         
-                        <p id="Temp">Temperatute: </p>
-                        <p id="humidity">Humidity: </p>
-                        <p id="wind">Wind Speed: </p>
-                        <p id="UV">UV radiation</p>
+                        <p id="temp"></p>
+                        <p id="humidity"></p>
+                        <p id="wind"></p>
+                        
                     </div>
                     
                     
                     
                 </div>
+                <div class="col-12" id="forecast">
+                    <h2 class='col-12'> Day Forecasts:</h2>
+                    <div class="row card-group" id="forecastsList"></div>    
+                </div>
             </div>
         </div>
+       
     </div>
     
 
 
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <script>
+
+        clear();
+        $("#clearBtn").on("click", clear);
+        var forecasts;
+
+        function allStorage() {
+            var values = [],
+                pastCities = Object.keys(localStorage),
+                i = pastCities.length;
+            while ( i-- ) {
+                values.push( localStorage.getItem(pastCities[i]));
+            }
+            for (i = 0; i < values.length; i++) {
+                $("#forecastsList").prepend(".previousCities" + pastCities[i] + "</button>");
+            }
+        }
+        
+
+        $("#search").on("click", function(event) {
+            
+                $("#search").click();
+                event.preventDefault()
+                var subject = $("#subject").val().trim();
+                var apiKey = "fedf15ae81e5160d1f28bfed321cc256";
+                var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" + subject + "&appid=" + apiKey;
+                 var queryUrlDisplay = "https://api.openweathermap.org/data/2.5/forecast?q=" + subject + "&appid=" + apiKey;
+                $.ajax({
+                    url: queryURL,
+                    method: "GET",
+                            
+                })
+                .then(function(response){
+                    $(".previousCities").append("<button class='previousCity'>" + subject + "</button>");
+                    localStorage.setItem("Previous City", subject);
+                    var icons = response.weather[0].icon;
+                    $("#forecast").show();
+                    $(".jumbotron").show();
+                    var iconsURL = "http://openweathermap.org/img/w/" + icons + ".png";
+                   $(".icon").attr('src', iconsURL)
+                        $("#city").text(response.name + " " + moment().format('l'));
+                            var currentTemp = response.main.temp * (9/5) - 459.67;
+                            $("#temp").text("Temperature: " + currentTemp.toFixed(1) + " °F");
+                            $("#humidity").text("Humidity: " + response.main.humidity + "%");
+                            $("#wind").text("Wind Speeds: " + response.wind.speed + " Mile Per Hour");
+                            
+                $.ajax({
+                            url: queryUrlDisplay,
+                            method: "GET"
+                })
+                .then(function(response){
+                            var forecastTimes = response.list;
+                            for (i = 0; i < forecastTimes.length; i++) {
+                                if (forecastTimes[i].dt_txt[12] === "2") {
+                                    var forecastDate = forecastTimes[i].dt_txt;
+                                    var forecastDateDisplay = forecastDate.charAt(5) + forecastDate.charAt(6) + "/" + forecastDate.charAt(8) + forecastdate.charAt(9) +
+                                    "/" + forecastDate.charAt(0) + forecastDate.charAt(1) + forecastDate.charAt(2) + forecastDate.charAt(3);
+                                    var forecastpics = forecastTimes[i].weather[0].icon;
+                                    var forecasticonsURL = "http://openweathermap.org/img/w/" + forecastpics + ".png";
+                                    var forecastsTemp = forecastTimes[i].main.temp * (9/5) - 459.67;
+                                    var forecastsHum = forecastTimes[i].main.humidity;
+                                    if (forecasts === false || forecasts === undefined) {
+                                        $("#forecastsList").prepend("<div class='forecast-day'>" +
+                                        "<h1>" + forecastDateDisplay + "<h1>" +
+                                        "<img class='ficon' src=" + forecasticonsURL + " alt='Weather icon'>" + 
+                                        "<div>Temp: " + forecastsTemp.toFixed(1) + " °F" + 
+                                        "</div><div>Humidity: " + forecastsHum + 
+                                        "%</div></div></div>");
+                                    } 
+                                }
+                            }
+                                    
+                        })
+                        
+                      
+                    
+                })
+                
+            });
+
+        
+        allStorage();
+         
+        $(document).on("click", ".previousCity", function() {
+            var subject = $(this).text();
+            $(".subject").val(subject);
+            $(".search").click();
+            $(this).remove();
+        });
+    </script>
 </body>
 </html>
