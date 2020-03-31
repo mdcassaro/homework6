@@ -69,13 +69,13 @@
 
     <script>
 
-        clear();
+        
         $("#clearBtn").on("click", clear);
         var forecasts;
 
         function allStorage() {
             var values = [],
-                pastCities = Object.keys(localStorage),
+                
                 i = pastCities.length;
             while ( i-- ) {
                 values.push( localStorage.getItem(pastCities[i]));
@@ -150,7 +150,7 @@
         
         allStorage();
          
-        $(document).on("click", ".previousCity", function() {
+        $("#clearBtn").on("click", ".previousCity", function() {
             var subject = $(this).text();
             $(".subject").val(subject);
             $(".search").click();
